@@ -1,9 +1,9 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name='traktcast',
     version='0.6',
-    packages=find_packages(),
+    packages=['traktcast'],
     url='https://www.github.com/milas/traktcast',
     license='MIT',
     author='Milas Bowman',

@@ -7,10 +7,8 @@ import trakt
 
 log = logging.getLogger(__name__)
 
-scrobble = trakt.Trakt['scrobble']
 
-
-class MediaStatusListener(object):
+class TraktScrobblerListener(object):
     def __init__(self, device: pychromecast.Chromecast):
         self.device = device
         log.debug('Created listener for %s', device.name)

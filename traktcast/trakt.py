@@ -7,10 +7,53 @@ import trakt
 
 log = logging.getLogger(__name__)
 
+PROD_TRAKT_CLIENT_ID = '9bc733685cc587d0f8c2085904760949cc462e7e2db32422f651bf27ef93e7e2'
+STAGING_TRAKT_CLIENT_ID = 'fe5f15959770ac1e8b1b990c3dcf35a800332581869c426c9f42b7d31d5ca8be'
+
+
+def use_staging():
+    """
+    Whether the production or staging Trakt.tv API should be used
+
+    The presence of the "TRAKT_STAGING" environment variable with a truthy value (e.g. 1)
+    will cause staging to be used.
+
+    :return: true if staging should be used; false if production should be used
+    """
+    return os.environ.get('TRAKT_STAGING', False)
+
+
+def configure_trakt_client():
+    """
+    Configures the Trakt client globally
+    """
+    trakt_auth_file = os.environ.get('TRAKT_AUTH', None)
+    if use_staging():
+        trakt_client_id = STAGING_TRAKT_CLIENT_ID
+        trakt.Trakt.site_url = 'https://staging.trakt.tv'
+        trakt.Trakt.base_url = 'https://api-staging.trakt.tv'
+    else:
+        trakt_client_id = PROD_TRAKT_CLIENT_ID
+
+    trakt_client_id = os.environ.get('TRAKT_CLIENT_ID', trakt_client_id)
+    trakt.Trakt.configuration.defaults.client(id=trakt_client_id)
+    auth = TraktAuthHelper(filename=trakt_auth_file)
+    trakt.Trakt.configuration.defaults.oauth.from_response(auth.authenticate(), refresh=True)
+
 
 class TraktAuthHelper(object):
+    """
+    Authentication helper for Trakt
+
+    Adapted from https://github.com/fuzeman/trakt.py/blob/master/examples/authentication/device.py
+    """
     def __init__(self, filename=None):
-        self.filename = os.path.expanduser(filename or '~/.traktcast/auth.json')
+        if not filename:
+            if use_staging():
+                filename = '~/.traktcast/auth.staging.json'
+            else:
+                filename = '~/.traktcast/auth.json'
+        self.filename = os.path.expanduser(filename)
 
         self.is_authenticating = threading.Condition()
         self.authorization = None

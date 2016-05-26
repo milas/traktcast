@@ -3,7 +3,7 @@ import logging
 import pychromecast.controllers
 import pychromecast.controllers.media
 
-from traktcast.controllers.hulu.api import HuluApi
+from traktcast.hulu.api import HuluApi
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +26,6 @@ class HuluHandler(object):
     def channel_disconnected(self):
         pass
 
-    # pylint: disable=unused-argument
     def receive_message(self, message, data: dict) -> bool:
         event_type = data.get('event_type', None)
         event_data = data.get('data', {})
